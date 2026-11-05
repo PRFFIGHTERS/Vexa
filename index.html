@@ -14,13 +14,13 @@
 <title>VEXA</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%238B5CF6'/><stop offset='1' stop-color='%23A78BFA'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='url(%23g)'/><text x='50' y='68' font-size='60' font-weight='800' fill='white' text-anchor='middle' font-family='Arial'>V</text></svg>"/>
 
-<!-- ===== CSS (ДОБАВЛЕН ?v=4 ДЛЯ СБРОСА КЭША) ===== -->
-<link rel="stylesheet" href="./css/base.css?v=4"/>
-<link rel="stylesheet" href="./css/screens.css?v=4"/>
-<link rel="stylesheet" href="./css/app.css?v=4"/>
-<link rel="stylesheet" href="./css/page.css?v=4"/>
-<link rel="stylesheet" href="./css/chat.css?v=4"/>
-<link rel="stylesheet" href="./css/overlays.css?v=4"/>
+<!-- ===== CSS ===== -->
+<link rel="stylesheet" href="./css/base.css?v=5"/>
+<link rel="stylesheet" href="./css/screens.css?v=5"/>
+<link rel="stylesheet" href="./css/app.css?v=5"/>
+<link rel="stylesheet" href="./css/page.css?v=5"/>
+<link rel="stylesheet" href="./css/chat.css?v=5"/>
+<link rel="stylesheet" href="./css/overlays.css?v=5"/>
 
 <!-- ===== SUPABASE SDK ===== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -50,7 +50,7 @@
   <p class="auth-sub" data-i18n="auth.sub">Мы отправим SMS с кодом подтверждения</p>
   <label class="lbl" data-i18n="auth.phone">Телефон</label>
   
-  <!-- НОВЫЙ БЛОК ВВОДА С ФЛАГАМИ -->
+  <!-- БЛОК ВВОДА С ФЛАГАМИ -->
   <div class="phone-input-wrapper" id="phoneWrapper">
     <button type="button" class="country-select-btn" id="countryBtn">
       <span id="currentFlag">🇷🇺</span>
@@ -59,14 +59,12 @@
     </button>
     
     <input class="field" id="emailInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="(900) 000-00-00" style="border: none; background: transparent; padding-left: 0;"/>
-  </div>
-
-  <div class="country-dropdown" id="countryDropdown">
-    <!-- Сюда JS вставит список стран -->
+    
+    <!-- Выпадающий список теперь ВНУТРИ рамки, чтобы открывался под полем -->
+    <div class="country-dropdown" id="countryDropdown"></div>
   </div>
 
   <div class="hint" data-i18n="auth.hint">Введите номер без кода страны</div>
-  <!-- КОНЕЦ НОВОГО БЛОКА -->
 
   <div class="err" id="phoneErr"></div>
   <button class="btn" id="btnSendCode" disabled style="margin-top:14px" data-i18n="auth.continue">Продолжить</button>
@@ -255,36 +253,28 @@
 <div class="viewer" id="imgViewer"><button class="close" id="viewerClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
 <div id="toast"></div>
 
-<!-- ============================================================
-     JS — порядок важен!
-     ============================================================ -->
-<script src="./js/config.js"></script>
-<script src="./js/prevent-zoom.js"></script>
-<script src="./js/db.js"></script>
-<script src="./js/lang.js"></script>
-<script src="./js/state.js"></script>
-<script src="./js/utils.js"></script>
-
-<script src="./js/navigation.js"></script>
-<script src="./js/sync.js"></script>
-
-<script src="./js/modals.js"></script>
-<script src="./js/cropper.js"></script>
-
-<script src="./js/chats.js"></script>
-<script src="./js/contacts2.js"></script>
-<script src="./js/me-panel.js"></script>
-<script src="./js/profile.js"></script>
-<script src="./js/user-profile.js"></script>
-
-<script src="./js/chat.js"></script>
-<script src="./js/message-actions.js"></script>
-
-<script src="./js/auth.js"></script>
-<script src="./js/boot.js"></script>
-<script src="./js/edge-back.js"></script>
-<script src="./js/misc.js"></script>
-<script src="./js/push.js"></script>
-<script src="./js/main.js"></script>
+<script src="./js/config.js?v=5"></script>
+<script src="./js/prevent-zoom.js?v=5"></script>
+<script src="./js/db.js?v=5"></script>
+<script src="./js/lang.js?v=5"></script>
+<script src="./js/state.js?v=5"></script>
+<script src="./js/utils.js?v=5"></script>
+<script src="./js/navigation.js?v=5"></script>
+<script src="./js/sync.js?v=5"></script>
+<script src="./js/modals.js?v=5"></script>
+<script src="./js/cropper.js?v=5"></script>
+<script src="./js/chats.js?v=5"></script>
+<script src="./js/contacts2.js?v=5"></script>
+<script src="./js/me-panel.js?v=5"></script>
+<script src="./js/profile.js?v=5"></script>
+<script src="./js/user-profile.js?v=5"></script>
+<script src="./js/chat.js?v=5"></script>
+<script src="./js/message-actions.js?v=5"></script>
+<script src="./js/auth.js?v=5"></script>
+<script src="./js/boot.js?v=5"></script>
+<script src="./js/edge-back.js?v=5"></script>
+<script src="./js/misc.js?v=5"></script>
+<script src="./js/push.js?v=5"></script>
+<script src="./js/main.js?v=5"></script>
 </body>
 </html>
