@@ -223,4 +223,72 @@ document.getElementById('btnAttach').onclick = () => {
     const reader = new FileReader();
     reader.onload = () => {
       DB.createMessage({
-        chat
+        chatId: State.activeChat.id, senderId: State.me.id, text: '',
+        attachments: [{ name: f.name, type: f.type, size: f.size, data: reader.result }]
+      });
+      renderMessages(); renderChats();
+      toast(t('toast.file_sent'), 'ok');
+    };
+    reader.readAsDataURL(f);
+  };
+  inp.click();
+};
+document.getElementById('btnEmoji').onclick = () => {
+  const r = document.getElementById('btnEmoji').getBoundingClientRect();
+  const emojis = ['👍','❤️','😂','😮','😢','🔥','👎','🎉','🙏','😍','🤔','😎','🥰','😅','😭'];
+  openContext(r.left - 120, r.top - 60, emojis.map(e => ({
+    label: e, fn: () => {
+      msgInput.value += e;
+      msgInput.dispatchEvent(new Event('input'));
+      msgInput.focus();
+    }
+  })));
+};
+
+document.getElementById('btnSearch').onclick = () => {
+  openNewChatModal();
+};
+function openNewChatModal(){
+  openPage({
+    title: t('contacts.search') || 'Search',
+    bodyHtml: `
+      <div style="padding:14px 16px 6px">
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text2)"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="ncSearch" placeholder="${esc(t('contacts.search'))}" autofocus/>
+        </div>
+      </div>
+      <div id="ncRes" style="padding:0 6px 30px"></div>`,
+    onMount: p => {
+      const inp = p.querySelector('#ncSearch');
+      const res = p.querySelector('#ncRes');
+      const render = () => {
+        const q = inp.value.trim().toLowerCase();
+        res.innerHTML = '';
+        const users = DB.data.users.filter(u =>
+          String(u.id) !== String(State.me.id) &&
+          (!q || (u.username||'').toLowerCase().includes(q) || (u.firstName||'').toLowerCase().includes(q) || (u.lastName||'').toLowerCase().includes(q))
+        );
+        if (!users.length){ res.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Никого не найдено</div>`; return; }
+        users.forEach(u => {
+          const r = el(`
+            <div class="result-item">
+              <div class="avatar av-40">${u.avatar ? `<img src="${esc(u.avatar)}" alt=""/>` : esc(initials(u))}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600">${esc(displayName(u))}</div>
+                <div style="color:var(--text2);font-size:12.5px">${lastSeenText(u)}</div>
+              </div>
+            </div>`);
+          r.onclick = () => {
+            closeAllPages();
+            setTimeout(() => openUserProfile(u.id), 120);
+          };
+          res.appendChild(r);
+        });
+      };
+      inp.addEventListener('input', render);
+      render();
+      setTimeout(() => inp.focus(), 200);
+    }
+  });
+}
