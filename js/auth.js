@@ -2,7 +2,6 @@
    AUTH FLOW (PHONE + SUPABASE SMS OTP)
    ============================================================ */
 
-// База стран СНГ: код, флаг, название, маска (9 - любая цифра)
 const COUNTRIES = [
   { code: '7', flag: '🇷🇺', name: 'Россия / Казахстан', mask: '(999) 999-99-99' },
   { code: '375', flag: '🇧🇾', name: 'Беларусь', mask: '(99) 999-99-99' },
@@ -15,7 +14,7 @@ const COUNTRIES = [
   { code: '373', flag: '🇲🇩', name: 'Молдова', mask: '(99) 999-999' }
 ];
 
-let currentCountry = COUNTRIES[0]; // По умолчанию Россия
+let currentCountry = COUNTRIES[0];
 
 const emailInput = document.getElementById('emailInput');
 const btnSendCode = document.getElementById('btnSendCode');
@@ -25,8 +24,8 @@ const countryDropdown = document.getElementById('countryDropdown');
 const currentFlag = document.getElementById('currentFlag');
 const currentCode = document.getElementById('currentCode');
 
-// 1. Рендер списка стран
 function renderCountries() {
+  if (!countryDropdown) return;
   countryDropdown.innerHTML = COUNTRIES.map(c => `
     <div class="country-item" data-code="${c.code}">
       <span class="flag">${c.flag}</span>
@@ -46,47 +45,45 @@ function renderCountries() {
   });
 }
 
-// 2. Обновление кнопки слева
 function updateCountryUI() {
   currentFlag.textContent = currentCountry.flag;
   currentCode.textContent = '+' + currentCountry.code;
   emailInput.placeholder = currentCountry.mask.replace(/9/g, '0');
 }
 
-// 3. Открытие/закрытие списка
 countryBtn.onclick = (e) => {
   e.preventDefault();
   countryDropdown.classList.toggle('open');
 };
+
 document.addEventListener('click', (e) => {
-  if (!countryBtn.contains(e.target) && !countryDropdown.contains(e.target)) {
-    countryDropdown.classList.remove('open');
+  if (countryBtn && countryDropdown) {
+    if (!countryBtn.contains(e.target) && !countryDropdown.contains(e.target)) {
+      countryDropdown.classList.remove('open');
+    }
   }
 });
 
-// 4. Автоопределение и маска при вводе
 emailInput.addEventListener('input', (e) => {
   let raw = e.target.value.replace(/\D/g, '');
   
-  // Если пользователь стер все, просто выходим
   if (!raw) {
     e.target.value = '';
     refreshSend();
     return;
   }
 
-  // Проверка на автоопределение (если ввели код страны вручную)
-  // Ищем страну, код которой совпадает с началом ввода
+  // Автоопределение страны по первым цифрам (если юзер сам вставил +375...)
   if (raw.length >= 3 || (raw.length === 1 && raw === '7')) {
     const found = COUNTRIES.find(c => raw.startsWith(c.code) && raw.length > c.code.length);
     if (found && found.code !== currentCountry.code) {
       currentCountry = found;
       updateCountryUI();
-      raw = raw.slice(currentCountry.code.length); // Отрезаем код страны от ввода
+      raw = raw.slice(currentCountry.code.length);
     }
   }
 
-  // Применяем маску (оставляем только нужное кол-во цифр)
+  // Маска
   let formatted = '';
   let maskIndex = 0;
   for (let i = 0; i < currentCountry.mask.length; i++) {
@@ -103,22 +100,20 @@ emailInput.addEventListener('input', (e) => {
   refreshSend();
 });
 
-// Проверка для кнопки "Продолжить"
+// Включает кнопку, как только введено достаточно цифр
 function refreshSend(){
   const rawNumber = emailInput.value.replace(/\D/g, '');
-  // Простейшая проверка: чтобы цифр было достаточно (хотя бы 8)
-  const ok = rawNumber.length >= 8;
+  const ok = rawNumber.length >= 8; 
   btnSendCode.disabled = !ok;
   phoneErr.textContent = '';
 }
 
-// 5. Отправка кода
 btnSendCode.onclick = async () => {
   const rawNumber = emailInput.value.replace(/\D/g, '');
-  const phone = '+' + currentCountry.code + rawNumber; // Склеиваем +7900...
+  const phone = '+' + currentCountry.code + rawNumber;
 
   if (!phoneValid(phone)) {
-    phoneErr.textContent = t('err.phone');
+    phoneErr.textContent = 'Введите корректный номер';
     return;
   }
   if (!supabaseAuth){
@@ -135,18 +130,17 @@ btnSendCode.onclick = async () => {
       options: { shouldCreateUser: true }
     });
     if (error){
-      toast(error.message || t('toast.server_error'), 'err');
+      toast(error.message || 'Ошибка сервера', 'err');
       btnSendCode.disabled = false;
       return;
     }
 
-    State.tempEmail = phone; // Сохраняем полный номер для OTP
+    State.tempEmail = phone;
     document.getElementById('otpSub').textContent =
       (LANG==='ru' ? 'Мы отправили SMS на ' : 'We sent an SMS to ') + phone;
 
     const cb = document.getElementById('codeBanner');
     cb.dataset.mode = 'info';
-    cb.dataset.code = '';
     cb.innerHTML = t('otp.check_mail');
 
     document.querySelectorAll('.otp-cell').forEach(c => c.value = '');
@@ -157,7 +151,7 @@ btnSendCode.onclick = async () => {
     toast(t('toast.code_sent'), 'ok');
   } catch (e) {
     console.error(e);
-    toast(e.message || t('toast.server_error'), 'err');
+    toast(e.message || 'Ошибка сервера', 'err');
     btnSendCode.disabled = false;
   }
 };
@@ -167,11 +161,10 @@ document.getElementById('authToLogin').onclick = () => emailInput.focus();
 document.getElementById('otpBack').onclick = () => showScreen('auth');
 document.getElementById('otpChange').onclick = () => { showScreen('auth'); emailInput.focus(); };
 
-// Инициализация при загрузке
 renderCountries();
 updateCountryUI();
 
-// ====== ОСТАЛЬНОЙ КОД OTP (БЕЗ ИЗМЕНЕНИЙ) ======
+// ====== OTP ЛОГИКА ======
 const otpCells = [...document.querySelectorAll('.otp-cell')];
 const btnVerify = document.getElementById('btnVerify');
 const otpResend = document.getElementById('otpResend');
