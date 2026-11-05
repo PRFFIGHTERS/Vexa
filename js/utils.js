@@ -1,5 +1,5 @@
 /* ============================================================
-   EMAIL VALIDATION — обязательно с @ и доменом (для find-by-email)
+   EMAIL VALIDATION
    ============================================================ */
 function emailValid(v){
   const s = String(v||'').trim();
@@ -9,11 +9,12 @@ function emailValid(v){
 }
 
 /* ============================================================
-   PHONE VALIDATION — E.164: + и 8–15 цифр
+   PHONE VALIDATION
    ============================================================ */
-function phoneValid(v){
-  const s = String(v||'').trim();
-  return /^\+\d{8,15}$/.test(s);
+function phoneValid(fullPhone) {
+  const digits = String(fullPhone || '').replace(/\D/g, '');
+  // Проверяем, что цифр от 10 до 15 (включая код страны) и есть плюс
+  return digits.length >= 10 && digits.length <= 15 && fullPhone.startsWith('+');
 }
 
 let toastTimer;
