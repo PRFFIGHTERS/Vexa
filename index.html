@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="apple-mobile-web-app-title" content="VEXA"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM2QzVDRTciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4RTdCRkYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI0IiBmaWxsPSJ1cmwoI2cpIi8+PHRleHQgeD0iNTAiIHk9IjY4IiBmb250LXNpemU9IjYwIiBmb250LXdlaWdodD0iODAwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIj5WPC90ZXh0Pjwvc3ZnPg=="/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="theme-color" content="#8B5CF6"/>
+<title>VEXA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%238B5CF6'/><stop offset='1' stop-color='%23A78BFA'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='url(%23g)'/><text x='50' y='68' font-size='60' font-weight='800' fill='white' text-anchor='middle' font-family='Arial'>V</text></svg>"/>
+
+<!-- ===== CSS ===== -->
+<link rel="stylesheet" href="./css/base.css"/>
+<link rel="stylesheet" href="./css/screens.css"/>
+<link rel="stylesheet" href="./css/app.css"/>
+<link rel="stylesheet" href="./css/page.css"/>
+<link rel="stylesheet" href="./css/chat.css"/>
+<link rel="stylesheet" href="./css/overlays.css"/>
+
+<!-- ===== SUPABASE SDK ===== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<section id="welcome" class="screen active">
+  <div class="logo">V</div>
+  <div class="brand">VEXA</div>
+  <div class="slogan" data-i18n="welcome.slogan">Общение без границ</div>
+  <div class="welcome-box">
+    <button class="btn" id="btnStart" data-i18n="welcome.start">Начать</button>
+    <div class="lang-toggle" id="langWelcome">
+      <button data-lang="ru" class="on">Русский</button>
+      <button data-lang="en">English</button>
+    </div>
+  </div>
+  <div class="legal" data-i18n="welcome.legal">Продолжая, вы принимаете условия использования и политику конфиденциальности.</div>
+</section>
+
+<section id="auth" class="screen auth">
+  <div class="top">
+    <button class="icon-btn" id="authBack"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button class="btn-2 btn-sm" id="authToLogin" data-i18n="auth.have">Уже есть аккаунт?</button>
+  </div>
+  <h1 class="auth-title" data-i18n="auth.title">Введите email</h1>
+  <p class="auth-sub" data-i18n="auth.sub">Мы отправим код подтверждения на почту</p>
+  <label class="lbl" data-i18n="auth.phone">Email</label>
+  <div class="phone-row">
+    <input class="field" id="emailInput" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="your@email.com"/>
+  </div>
+  <div class="hint" data-i18n="auth.hint">Например: name@gmail.com (обязательно с @)</div>
+  <div class="err" id="phoneErr"></div>
+  <button class="btn" id="btnSendCode" disabled style="margin-top:14px" data-i18n="auth.continue">Продолжить</button>
+</section>
+
+<section id="otp" class="screen auth">
+  <div class="top">
+    <button class="icon-btn" id="otpBack"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  </div>
+  <h1 class="auth-title" data-i18n="otp.title">Введите код</h1>
+  <p class="auth-sub" id="otpSub">—</p>
+  <div class="otp-wrap" id="otpWrap">
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"/>
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
+    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
+  </div>
+  <div class="otp-meta">
+    <a id="otpChange" data-i18n="otp.change">Изменить email</a>
+    <a id="otpResend" class="disabled"><span data-i18n="otp.resend">Отправить снова через</span> <span id="otpTimer">60</span>с</a>
+  </div>
+  <div class="code-banner" id="codeBanner"></div>
+  <button class="btn" id="btnVerify" disabled style="margin-top:14px" data-i18n="otp.confirm">Подтвердить</button>
+</section>
+
+<section id="nameScreen" class="screen auth">
+  <h1 class="auth-title" data-i18n="name.title">Как вас зовут?</h1>
+  <p class="auth-sub" data-i18n="name.sub">Это увидят другие пользователи VEXA</p>
+  <label class="lbl" data-i18n="name.first">Имя *</label>
+  <input class="field" id="inpName" autocomplete="given-name" style="margin-bottom:12px"/>
+  <label class="lbl" data-i18n="name.last">Фамилия</label>
+  <input class="field" id="inpSurname" autocomplete="family-name" style="margin-bottom:12px"/>
+  <label class="lbl" data-i18n="name.user">Username</label>
+  <input class="field" id="inpUsername" placeholder="username"/>
+  <div class="hint" id="usernameHint" style="min-height:16px"></div>
+  <button class="btn" id="btnCreate" disabled style="margin-top:14px" data-i18n="name.create">Создать аккаунт</button>
+</section>
+
+<section id="app" class="screen">
+  <header class="app-header">
+    <h1 class="app-title" data-i18n="nav.chats">Чаты</h1>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="btnSearch" aria-label="Search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    </button>
+    <button class="icon-btn" id="btnPlus" aria-label="Create">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </header>
+
+  <main id="appMain">
+    <div class="panel active" id="panel-chats">
+      <div class="chats-search" onclick="document.getElementById('btnSearch').click()">
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text2);flex-shrink:0"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="text" placeholder="Search Chats" readonly/>
+        </div>
+      </div>
+      <nav class="tabs" id="tabs">
+        <button class="tab on" data-tab="all" data-i18n="tab.all">Все</button>
+        <button class="tab" data-tab="personal" data-i18n="tab.personal">Личные</button>
+        <button class="tab" data-tab="group" data-i18n="tab.groups">Группы</button>
+        <button class="tab" data-tab="channel" data-i18n="tab.channels">Каналы</button>
+        <button class="tab" data-tab="unread" data-i18n="tab.unread">Непрочитанные</button>
+        <button class="tab" data-tab="saved" data-i18n="tab.saved">Избранное</button>
+      </nav>
+      <div class="list" id="chatList"></div>
+    </div>
+
+    <div class="panel" id="panel-contacts">
+      <div class="panel-header">
+        <h2 data-i18n="nav.contacts">Контакты</h2>
+        <button class="btn btn-sm" id="ctAddBtn">+ <span data-i18n="contacts.add">Добавить</span></button>
+      </div>
+      <div class="list" id="contactsList"></div>
+    </div>
+
+    <div class="panel" id="panel-calls">
+      <div class="panel-header"><h2 data-i18n="nav.calls">Звонки</h2></div>
+      <div class="list" id="callsList"></div>
+    </div>
+
+    <div class="panel" id="panel-me">
+      <div class="me-hero" id="meHero">
+        <div class="avatar av-96" id="meAvatar">?</div>
+        <div style="text-align:center">
+          <div class="me-name" id="meName">—</div>
+          <div class="me-username" id="meUsername">@—</div>
+        </div>
+      </div>
+      <div class="me-menu" id="meMenu">
+        <button data-action="saved">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <span data-i18n="menu.saved">Избранное</span>
+        </button>
+        <button data-action="settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.7 1.7 0 008 19.4a1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H2a2 2 0 110-4h.1A1.7 1.7 0 003.6 8a1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H8a1.7 1.7 0 001-1.5V2a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V8a1.7 1.7 0 001.5 1H22a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+          <span data-i18n="menu.settings">Настройки</span>
+        </button>
+        <button data-action="privacy">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span data-i18n="menu.privacy">Приватность</span>
+        </button>
+        <button data-action="invite">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6M19 8v6"/></svg>
+          <span data-i18n="menu.invite">Пригласить друзей</span>
+        </button>
+        <button data-action="help">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
+          <span data-i18n="menu.help">Помощь</span>
+        </button>
+        <button data-action="about">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span data-i18n="menu.about">О приложении</span>
+        </button>
+        <button data-action="notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg>
+          <span data-i18n="menu.notifications">Уведомления</span>
+        </button>
+        <button data-action="logout" class="danger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+          <span data-i18n="menu.logout">Выйти</span>
+        </button>
+        <button data-action="delete" class="danger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14"/><path d="M10 11v6M14 11v6"/></svg>
+          <span data-i18n="menu.delete_account">Удалить аккаунт</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="nav-indicator" id="navIndicator"></div>
+    <button data-nav="chats" class="on">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span data-i18n="nav.chats">Чаты</span>
+    </button>
+    <button data-nav="contacts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span data-i18n="nav.contacts">Контакты</span>
+    </button>
+    <button data-nav="calls">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.4 1.8.7 2.6a2 2 0 01-.5 2.1L8 9.7a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.5c.8.3 1.7.6 2.6.7a2 2 0 011.7 2z"/></svg>
+      <span data-i18n="nav.calls">Звонки</span>
+    </button>
+    <button data-nav="me">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span data-i18n="nav.me">Вы</span>
+    </button>
+  </nav>
+
+  <div class="chat-overlay" id="chatOverlay">
+    <div class="chat-top" id="chatTop"></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="composer" id="composer">
+      <div class="reply-bar" id="replyBar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14l-5-5 5-5M4 9h10a6 6 0 016 6v6"/></svg>
+        <span id="replyText" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button class="icon-btn" style="width:32px;height:32px" id="replyCancel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="composer-row">
+        <button class="side-btn" id="btnAttach" title="Attach">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+        <button class="side-btn" id="btnEmoji">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+        </button>
+        <textarea id="msgInput" placeholder="Сообщение..." rows="1" maxlength="4000"></textarea>
+        <button class="send-btn" id="btnSend" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="pagesContainer"></div>
+
+<div class="sheet-bd" id="sheetBd"><div class="sheet" id="sheetBody"></div></div>
+<div class="modal-bd" id="modalBd"><div class="modal" id="modalBody"></div></div>
+<div class="ctx" id="ctxMenu"></div>
+<div class="viewer" id="imgViewer"><button class="close" id="viewerClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+<div id="toast"></div>
+
+<!-- ============================================================
+     JS — порядок важен!
+     ============================================================ -->
+<script src="./js/config.js"></script>
+<script src="./js/prevent-zoom.js"></script>
+<script src="./js/db.js"></script>
+<script src="./js/i18n.js"></script>
+<script src="./js/state.js"></script>
+<script src="./js/utils.js"></script>
+<script src="./js/navigation.js"></script>
+<script src="./js/sync.js"></script>
+<script src="./js/chats.js"></script>
+<script src="./js/contacts.js"></script>
+<script src="./js/me-panel.js"></script>
+<script src="./js/profile.js"></script>
+<script src="./js/user-profile.js"></script>
+<script src="./js/chat.js"></script>
+<script src="./js/message-actions.js"></script>
+<script src="./js/modals.js"></script>
+<script src="./js/cropper.js"></script>
+<script src="./js/auth.js"></script>
+<script src="./js/boot.js"></script>
+<script src="./js/edge-back.js"></script>
+<script src="./js/misc.js"></script>
+<script src="./js/push.js"></script>
+<script src="./js/main.js"></script>
+</body>
+</html>
