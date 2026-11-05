@@ -1,11 +1,19 @@
 /* ============================================================
-   EMAIL VALIDATION — обязательно с @ и доменом
+   EMAIL VALIDATION — обязательно с @ и доменом (для find-by-email)
    ============================================================ */
 function emailValid(v){
   const s = String(v||'').trim();
   if (!s) return false;
   if (!s.includes('@')) return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+/* ============================================================
+   PHONE VALIDATION — E.164: + и 8–15 цифр
+   ============================================================ */
+function phoneValid(v){
+  const s = String(v||'').trim();
+  return /^\+\d{8,15}$/.test(s);
 }
 
 let toastTimer;
@@ -19,7 +27,7 @@ function toast(msg, kind){
 }
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); }
 function initials(u){ if (!u) return '?'; const a=(u.firstName||'')[0]||'', b=(u.lastName||'')[0]||''; return ((a+b)||(u.username||'')[0]||'?').toUpperCase(); }
-function displayName(u){ if (!u) return '—'; return [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email || '—'; }
+function displayName(u){ if (!u) return '—'; return [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email || u.phone || '—'; }
 function el(h){ const tpl=document.createElement('template'); tpl.innerHTML=h.trim(); return tpl.content.firstElementChild; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtTime(ts){ const d=new Date(ts); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
