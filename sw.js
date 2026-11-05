@@ -6,10 +6,6 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(clients.claim());
 });
 
-self.addEventListener('fetch', (e) => {
-  // Пропускаем запросы в сеть
-});
-
 self.addEventListener('push', (e) => {
   const data = e.data ? e.data.json() : {};
   const title = data.title || 'VEXA';
@@ -22,5 +18,5 @@ self.addEventListener('push', (e) => {
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
-  e.waitUntil(clients.openWindow('/'));
+  e.waitUntil(clients.openWindow('/Vexa/'));
 });
