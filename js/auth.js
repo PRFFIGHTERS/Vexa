@@ -1,35 +1,123 @@
 /* ============================================================
    AUTH FLOW (PHONE + SUPABASE SMS OTP)
    ============================================================ */
+
+// База стран СНГ: код, флаг, название, маска (9 - любая цифра)
+const COUNTRIES = [
+  { code: '7', flag: '🇷🇺', name: 'Россия / Казахстан', mask: '(999) 999-99-99' },
+  { code: '375', flag: '🇧🇾', name: 'Беларусь', mask: '(99) 999-99-99' },
+  { code: '380', flag: '🇺🇦', name: 'Украина', mask: '(99) 999-99-99' },
+  { code: '998', flag: '🇺🇿', name: 'Узбекистан', mask: '(99) 999-99-99' },
+  { code: '996', flag: '🇰🇬', name: 'Кыргызстан', mask: '(999) 999-999' },
+  { code: '992', flag: '🇹🇯', name: 'Таджикистан', mask: '(99) 999-9999' },
+  { code: '374', flag: '🇦🇲', name: 'Армения', mask: '(99) 999-999' },
+  { code: '994', flag: '🇦🇿', name: 'Азербайджан', mask: '(99) 999-99-99' },
+  { code: '373', flag: '🇲🇩', name: 'Молдова', mask: '(99) 999-999' }
+];
+
+let currentCountry = COUNTRIES[0]; // По умолчанию Россия
+
 const emailInput = document.getElementById('emailInput');
 const btnSendCode = document.getElementById('btnSendCode');
 const phoneErr = document.getElementById('phoneErr');
+const countryBtn = document.getElementById('countryBtn');
+const countryDropdown = document.getElementById('countryDropdown');
+const currentFlag = document.getElementById('currentFlag');
+const currentCode = document.getElementById('currentCode');
 
-emailInput.addEventListener('input', () => {
-  refreshSend();
-});
-emailInput.addEventListener('blur', () => {
-  let v = emailInput.value.trim().replace(/[^\d+]/g,'');
-  if (v && !v.startsWith('+')) v = '+' + v;
-  emailInput.value = v;
-  refreshSend();
-});
-emailInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && phoneValid(emailInput.value)){
-    btnSendCode.click();
+// 1. Рендер списка стран
+function renderCountries() {
+  countryDropdown.innerHTML = COUNTRIES.map(c => `
+    <div class="country-item" data-code="${c.code}">
+      <span class="flag">${c.flag}</span>
+      <span class="name">${c.name}</span>
+      <span class="code">+${c.code}</span>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.country-item').forEach(item => {
+    item.onclick = () => {
+      const code = item.dataset.code;
+      currentCountry = COUNTRIES.find(c => c.code === code);
+      updateCountryUI();
+      countryDropdown.classList.remove('open');
+      emailInput.focus();
+    };
+  });
+}
+
+// 2. Обновление кнопки слева
+function updateCountryUI() {
+  currentFlag.textContent = currentCountry.flag;
+  currentCode.textContent = '+' + currentCountry.code;
+  emailInput.placeholder = currentCountry.mask.replace(/9/g, '0');
+}
+
+// 3. Открытие/закрытие списка
+countryBtn.onclick = (e) => {
+  e.preventDefault();
+  countryDropdown.classList.toggle('open');
+};
+document.addEventListener('click', (e) => {
+  if (!countryBtn.contains(e.target) && !countryDropdown.contains(e.target)) {
+    countryDropdown.classList.remove('open');
   }
 });
 
+// 4. Автоопределение и маска при вводе
+emailInput.addEventListener('input', (e) => {
+  let raw = e.target.value.replace(/\D/g, '');
+  
+  // Если пользователь стер все, просто выходим
+  if (!raw) {
+    e.target.value = '';
+    refreshSend();
+    return;
+  }
+
+  // Проверка на автоопределение (если ввели код страны вручную)
+  // Ищем страну, код которой совпадает с началом ввода
+  if (raw.length >= 3 || (raw.length === 1 && raw === '7')) {
+    const found = COUNTRIES.find(c => raw.startsWith(c.code) && raw.length > c.code.length);
+    if (found && found.code !== currentCountry.code) {
+      currentCountry = found;
+      updateCountryUI();
+      raw = raw.slice(currentCountry.code.length); // Отрезаем код страны от ввода
+    }
+  }
+
+  // Применяем маску (оставляем только нужное кол-во цифр)
+  let formatted = '';
+  let maskIndex = 0;
+  for (let i = 0; i < currentCountry.mask.length; i++) {
+    if (maskIndex >= raw.length) break;
+    if (currentCountry.mask[i] === '9') {
+      formatted += raw[maskIndex];
+      maskIndex++;
+    } else {
+      formatted += currentCountry.mask[i];
+    }
+  }
+
+  e.target.value = formatted;
+  refreshSend();
+});
+
+// Проверка для кнопки "Продолжить"
 function refreshSend(){
-  const v = emailInput.value.trim();
-  const ok = phoneValid(v);
+  const rawNumber = emailInput.value.replace(/\D/g, '');
+  // Простейшая проверка: чтобы цифр было достаточно (хотя бы 8)
+  const ok = rawNumber.length >= 8;
   btnSendCode.disabled = !ok;
-  phoneErr.textContent = v && !ok ? t('err.phone') : '';
+  phoneErr.textContent = '';
 }
 
+// 5. Отправка кода
 btnSendCode.onclick = async () => {
-  const phone = emailInput.value.trim();
-  if (!phoneValid(phone)){
+  const rawNumber = emailInput.value.replace(/\D/g, '');
+  const phone = '+' + currentCountry.code + rawNumber; // Склеиваем +7900...
+
+  if (!phoneValid(phone)) {
     phoneErr.textContent = t('err.phone');
     return;
   }
@@ -52,7 +140,7 @@ btnSendCode.onclick = async () => {
       return;
     }
 
-    State.tempEmail = phone;
+    State.tempEmail = phone; // Сохраняем полный номер для OTP
     document.getElementById('otpSub').textContent =
       (LANG==='ru' ? 'Мы отправили SMS на ' : 'We sent an SMS to ') + phone;
 
@@ -79,6 +167,11 @@ document.getElementById('authToLogin').onclick = () => emailInput.focus();
 document.getElementById('otpBack').onclick = () => showScreen('auth');
 document.getElementById('otpChange').onclick = () => { showScreen('auth'); emailInput.focus(); };
 
+// Инициализация при загрузке
+renderCountries();
+updateCountryUI();
+
+// ====== ОСТАЛЬНОЙ КОД OTP (БЕЗ ИЗМЕНЕНИЙ) ======
 const otpCells = [...document.querySelectorAll('.otp-cell')];
 const btnVerify = document.getElementById('btnVerify');
 const otpResend = document.getElementById('otpResend');
@@ -154,7 +247,6 @@ btnVerify.onclick = async () => {
     const supabaseUser = data.user;
     const uid = String(supabaseUser.id);
 
-    // 1) Уже есть локально?
     let localUser = DB.findUserById(uid);
     if (localUser){
       DB.setSession(uid);
@@ -162,7 +254,6 @@ btnVerify.onclick = async () => {
       return;
     }
 
-    // 2) Есть на бэкенде? — теперь по телефону
     try {
       const r = await fetch(API + '/api/find-by-phone', {
         method: 'POST',
@@ -187,7 +278,6 @@ btnVerify.onclick = async () => {
       }
     } catch(e){ console.error('find-by-phone', e); }
 
-    // 3) Новый — на экран имени
     State.tempSupabaseId = uid;
     showScreen('nameScreen');
     document.getElementById('inpName').focus();
