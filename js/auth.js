@@ -1,5 +1,5 @@
 /* ============================================================
-   AUTH FLOW (EMAIL + SUPABASE OTP)
+   AUTH FLOW (PHONE + SUPABASE SMS OTP)
    ============================================================ */
 const emailInput = document.getElementById('emailInput');
 const btnSendCode = document.getElementById('btnSendCode');
@@ -9,25 +9,27 @@ emailInput.addEventListener('input', () => {
   refreshSend();
 });
 emailInput.addEventListener('blur', () => {
-  emailInput.value = emailInput.value.trim();
+  let v = emailInput.value.trim().replace(/[^\d+]/g,'');
+  if (v && !v.startsWith('+')) v = '+' + v;
+  emailInput.value = v;
   refreshSend();
 });
 emailInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && emailValid(emailInput.value)){
+  if (e.key === 'Enter' && phoneValid(emailInput.value)){
     btnSendCode.click();
   }
 });
 
 function refreshSend(){
   const v = emailInput.value.trim();
-  const ok = emailValid(v);
+  const ok = phoneValid(v);
   btnSendCode.disabled = !ok;
   phoneErr.textContent = v && !ok ? t('err.phone') : '';
 }
 
 btnSendCode.onclick = async () => {
-  const email = emailInput.value.trim().toLowerCase();
-  if (!emailValid(email)){
+  const phone = emailInput.value.trim();
+  if (!phoneValid(phone)){
     phoneErr.textContent = t('err.phone');
     return;
   }
@@ -41,7 +43,7 @@ btnSendCode.onclick = async () => {
 
   try {
     const { error } = await supabaseAuth.auth.signInWithOtp({
-      email,
+      phone,
       options: { shouldCreateUser: true }
     });
     if (error){
@@ -50,9 +52,9 @@ btnSendCode.onclick = async () => {
       return;
     }
 
-    State.tempEmail = email;
+    State.tempEmail = phone;
     document.getElementById('otpSub').textContent =
-      (LANG==='ru' ? 'Мы отправили код на ' : 'We sent a code to ') + email;
+      (LANG==='ru' ? 'Мы отправили SMS на ' : 'We sent an SMS to ') + phone;
 
     const cb = document.getElementById('codeBanner');
     cb.dataset.mode = 'info';
@@ -83,27 +85,27 @@ const otpResend = document.getElementById('otpResend');
 const otpTimer = document.getElementById('otpTimer');
 let resendInterval;
 function otpValue(){ return otpCells.map(c => c.value).join(''); }
-function refreshVerify(){ btnVerify.disabled = otpValue().length !== 8; }
+function refreshVerify(){ btnVerify.disabled = otpValue().length !== 6; }
 otpCells.forEach((cell, i) => {
   cell.addEventListener('input', e => {
     let v = e.target.value.replace(/\D/g,'');
     if (v.length > 1){
       const arr = v.split('');
-      for (let k=0;k<arr.length && i+k<8;k++) otpCells[i+k].value = arr[k];
-      otpCells[Math.min(7, i+arr.length)].focus();
-    } else { cell.value = v; if (v && i < 7) otpCells[i+1].focus(); }
+      for (let k=0;k<arr.length && i+k<6;k++) otpCells[i+k].value = arr[k];
+      otpCells[Math.min(5, i+arr.length)].focus();
+    } else { cell.value = v; if (v && i < 5) otpCells[i+1].focus(); }
     refreshVerify();
   });
   cell.addEventListener('keydown', e => {
     if (e.key === 'Backspace' && !cell.value && i > 0) otpCells[i-1].focus();
     if (e.key === 'ArrowLeft' && i > 0) otpCells[i-1].focus();
-    if (e.key === 'ArrowRight' && i < 7) otpCells[i+1].focus();
+    if (e.key === 'ArrowRight' && i < 5) otpCells[i+1].focus();
   });
   cell.addEventListener('paste', e => {
     e.preventDefault();
-    const txt = (e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,8);
-    for (let k=0;k<8;k++) otpCells[k].value = txt[k] || '';
-    otpCells[Math.min(7, txt.length)].focus();
+    const txt = (e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,6);
+    for (let k=0;k<6;k++) otpCells[k].value = txt[k] || '';
+    otpCells[Math.min(5, txt.length)].focus();
     refreshVerify();
   });
 });
@@ -119,7 +121,7 @@ otpResend.onclick = async () => {
   if (otpResend.classList.contains('disabled')) return;
   if (!State.tempEmail || !supabaseAuth) return;
   try {
-    const { error } = await supabaseAuth.auth.signInWithOtp({ email: State.tempEmail });
+    const { error } = await supabaseAuth.auth.signInWithOtp({ phone: State.tempEmail });
     if (error){ toast(error.message, 'err'); return; }
     document.querySelectorAll('.otp-cell').forEach(c => c.value = '');
     btnVerify.disabled = true;
@@ -132,16 +134,16 @@ otpResend.onclick = async () => {
 
 btnVerify.onclick = async () => {
   const token = otpValue();
-  if (token.length !== 8){ toast(t('err.otp'), 'err'); return; }
-  const email = State.tempEmail;
-  if (!email){ showScreen('auth'); return; }
+  if (token.length !== 6){ toast(t('err.otp'), 'err'); return; }
+  const phone = State.tempEmail;
+  if (!phone){ showScreen('auth'); return; }
   if (!supabaseAuth){ toast('Supabase не настроен', 'err'); return; }
 
   btnVerify.disabled = true;
 
   try {
     const { data, error } = await supabaseAuth.auth.verifyOtp({
-      email, token, type: 'email'
+      phone, token, type: 'sms'
     });
     if (error){
       toast(t('err.otp'), 'err');
@@ -160,18 +162,18 @@ btnVerify.onclick = async () => {
       return;
     }
 
-    // 2) Есть на бэкенде?
+    // 2) Есть на бэкенде? — теперь по телефону
     try {
-      const r = await fetch(API + '/api/find-by-email', {
+      const r = await fetch(API + '/api/find-by-phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ phone })
       });
       const d = await r.json();
       if (d && d.found && d.user){
         localUser = DB.createUser({
           id: uid,
-          email: d.user.email || email,
+          phone: d.user.phone || phone,
           firstName: d.user.first_name,
           lastName: d.user.last_name,
           username: d.user.username,
@@ -183,7 +185,7 @@ btnVerify.onclick = async () => {
         bootUser(uid);
         return;
       }
-    } catch(e){ console.error('find-by-email', e); }
+    } catch(e){ console.error('find-by-phone', e); }
 
     // 3) Новый — на экран имени
     State.tempSupabaseId = uid;
@@ -235,7 +237,7 @@ btnCreate.onclick = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: State.tempSupabaseId,
-        email: State.tempEmail,
+        phone: State.tempEmail,
         firstName: name,
         lastName: inpSurname.value.trim() || null,
         username: uname
@@ -260,7 +262,7 @@ btnCreate.onclick = async () => {
     if (!localUser){
       localUser = DB.createUser({
         id: uidStr,
-        email: srv.email || State.tempEmail,
+        phone: srv.phone || State.tempEmail,
         firstName: srv.first_name,
         lastName: srv.last_name,
         username: srv.username,
