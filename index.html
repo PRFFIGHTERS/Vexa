@@ -49,10 +49,25 @@
   <h1 class="auth-title" data-i18n="auth.title">Введите номер телефона</h1>
   <p class="auth-sub" data-i18n="auth.sub">Мы отправим SMS с кодом подтверждения</p>
   <label class="lbl" data-i18n="auth.phone">Телефон</label>
-  <div class="phone-row">
-    <input class="field" id="emailInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 900 000 00 00"/>
+  
+  <!-- НОВЫЙ БЛОК ВВОДА С ФЛАГАМИ -->
+  <div class="phone-input-wrapper" id="phoneWrapper">
+    <button type="button" class="country-select-btn" id="countryBtn">
+      <span id="currentFlag">🇷🇺</span>
+      <span id="currentCode">+7</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    
+    <input class="field" id="emailInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="(900) 000-00-00" style="border: none; background: transparent; padding-left: 0;"/>
   </div>
-  <div class="hint" data-i18n="auth.hint">Формат: +7 900 000 00 00 (с кодом страны)</div>
+
+  <div class="country-dropdown" id="countryDropdown">
+    <!-- Сюда JS вставит список стран -->
+  </div>
+
+  <div class="hint" data-i18n="auth.hint">Введите номер без кода страны</div>
+  <!-- КОНЕЦ НОВОГО БЛОКА -->
+
   <div class="err" id="phoneErr"></div>
   <button class="btn" id="btnSendCode" disabled style="margin-top:14px" data-i18n="auth.continue">Продолжить</button>
 </section>
