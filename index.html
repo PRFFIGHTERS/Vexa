@@ -46,13 +46,13 @@
     <button class="icon-btn" id="authBack"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
     <button class="btn-2 btn-sm" id="authToLogin" data-i18n="auth.have">Уже есть аккаунт?</button>
   </div>
-  <h1 class="auth-title" data-i18n="auth.title">Введите email</h1>
-  <p class="auth-sub" data-i18n="auth.sub">Мы отправим код подтверждения на почту</p>
-  <label class="lbl" data-i18n="auth.phone">Email</label>
+  <h1 class="auth-title" data-i18n="auth.title">Введите номер телефона</h1>
+  <p class="auth-sub" data-i18n="auth.sub">Мы отправим SMS с кодом подтверждения</p>
+  <label class="lbl" data-i18n="auth.phone">Телефон</label>
   <div class="phone-row">
-    <input class="field" id="emailInput" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="your@email.com"/>
+    <input class="field" id="emailInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 900 000 00 00"/>
   </div>
-  <div class="hint" data-i18n="auth.hint">Например: name@gmail.com (обязательно с @)</div>
+  <div class="hint" data-i18n="auth.hint">Формат: +7 900 000 00 00 (с кодом страны)</div>
   <div class="err" id="phoneErr"></div>
   <button class="btn" id="btnSendCode" disabled style="margin-top:14px" data-i18n="auth.continue">Продолжить</button>
 </section>
@@ -70,11 +70,9 @@
     <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
     <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
     <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
-    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
-    <input class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]*"/>
   </div>
   <div class="otp-meta">
-    <a id="otpChange" data-i18n="otp.change">Изменить email</a>
+    <a id="otpChange" data-i18n="otp.change">Изменить номер</a>
     <a id="otpResend" class="disabled"><span data-i18n="otp.resend">Отправить снова через</span> <span id="otpTimer">60</span>с</a>
   </div>
   <div class="code-banner" id="codeBanner"></div>
