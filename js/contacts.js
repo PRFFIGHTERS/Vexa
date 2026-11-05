@@ -12,7 +12,9 @@ function renderContactsList(){
         <p>${esc(t('contacts.empty_sub'))}</p>
         <button class="btn btn-sm" id="ctEmptyAdd">${esc(t('contacts.add'))}</button>
       </div>`;
-    document.getElementById('ctEmptyAdd').onclick = openAddContactPage;
+    
+    // ИСПРАВЛЕНО: обернуто в стрелочную функцию
+    document.getElementById('ctEmptyAdd').onclick = () => openAddContactPage();
     return;
   }
   cs.forEach(u => {
@@ -28,7 +30,9 @@ function renderContactsList(){
     box.appendChild(r);
   });
 }
-document.getElementById('ctAddBtn').onclick = openAddContactPage;
+
+// ИСПРАВЛЕНО: обернуто в стрелочную функцию
+document.getElementById('ctAddBtn').onclick = () => openAddContactPage();
 
 function renderCallsList(){
   if (!State.me) return;
